@@ -1,100 +1,80 @@
 # Installation Instructions
-The *music_processor* python script requires the latest version of the following (non-standard) python packages
+
+Clone or download the appropriate SDK repo for Windows from our [GitHub Page](https://github.com/nanoleaf/aurora-sdk-win)
+
+In the SDK, the `music_processor` python script requires the latest version of the following (non-standard) python packages
 
 * _numpy_
 * _pyaudio_
 * _librosa_
 
-The recommended installation method is _pip_. See [here](http://pip.readthedocs.io/en/stable/installing/) for _pip_ installation instructions.
+We highly recommend that you use a virtual environment to install these packages and to run the `music_processor` script. The following instructions will use `conda` to create virtual environments.
 
-Clone or download the appropriate SDK repo from our [GitHub Page](https://github.com/nanoleaf)
+Cygwin is required to work with the SDK on Windows. For installation instructions, see [here](https://cygwin.com/install.html).
 
-## Windows
-To use the SDK on Windows, Cygwin needs to be installed. For installation instructions, see [here](https://cygwin.com/install.html )
+During Cygwin install, make sure to select the following packages:
 
-Install miniconda for Windows from [here](https://conda.io/miniconda.html). Assume the absolute path to its root directory is *CONDA_ROOT*. In Cygwin, miniconda is called by the _conda_ command.
+`make`
 
-In Cygwin, install up-to-date versions of _make_ and _gcc_
+`gcc`
 
-The following is executed within Cygwin:
+`g++`
 
-Append _CONDA_ROOT_ to _PATH_ by 
-`export PATH=CONDA_ROOT:$PATH`
+`python`
 
-Check that the python called by the shell is the one in `CONDA_ROOT` by `which python`. Verify the output is `CONDA_ROOT/python`
+Install miniconda for Windows from [here](https://conda.io/miniconda.html). Make sure to select the option to **Add Anaconda to my PATH environment variable**.
 
-Install numpy by
-`conda install -c anaconda numpy`
+The following should be executed within a Command Prompt.
 
-Install librosa by
+Create and activate a virtual environment called `nanoleaf` (or any other name):
+
+`conda create --name nanoleaf`
+
+`activate nanoleaf`
+
+Navigate to the top-level SDK directory `aurora-sdk-win`. It may be located within your Cygwin directory, for example, `C:\cygwin64\home\nanoleaf\aurora-sdk-win`.
+
+Install numpy:
+
+`conda install numpy`
+
+Install pyaudio using `pip` (`conda install` will likely fail):
+
+`pip install pyaudio`
+
+Install librosa:
+
 `conda install -c conda-forge librosa`
 
-Note that _pyaudio_ cannot be installed using _conda_ on Windows. Use the _pip_ packaged with _conda_ by:
+Install future (python 2.x users only):
 
-`CONDA_ROOT/Scripts/pip install pyaudio`
+`conda install future`
 
-verify that pyaudio has been installed for conda by 
-_conda list_
+To deactivate the virtual environment:
 
-## macOS
-The following installation requires _homebrew_. See [here](https://brew.sh/) for installation instructions. 
-
-`pip install numpy`
-
-`brew install portaudio`
-
-`pip install pyaudio`
-
-`pip install librosa`
-
-Note: If `pip install pyaudio` throws an error that it could not find portaudio.h, even though brew `install portaudio` has successfully installed portaudio, try running the following instead of `pip install pyaudio`:
-
-`pip install --global-option='build_ext' -global-option='-I/usr/local/include' -global-option='-L/usr/local/lib' pyaudio`
-
-## Linux
-For successful pyaudio install, make sure the packages *portaudio19-dev* and *python-dev-all* have been installed for your linux distribution, e.g., by using 
-
-`sudo apt-get install portaudio19-dev`
-
-`pip install numpy`
-
-`pip install pyaudio`
-
-`pip install librosa`
+`deactivate nanoleaf`
 
 # Testing Your Plugin
 ## Compile Your Plugin
 The _AuroraPlugin_ Framework comes with a makefile and a utilities library.
 Once you have completed the implementation of your plugin, you can build it using the makefile in the Debug folder. If any additional libraries have been used, the makefile must be modified to link those libraries in as well during linking.
 
-To compile, use a terminal window (Cygwin terminal on windows) and change your working directory to the PluginSDK/Debug folder. Use the following commands:
+To compile, use a Cygwin terminal and change your working directory to the PluginSDK/Debug folder. Use the following commands:
 
 `make clean`
 
-`make all`
+`make`
 
 Once the compilation completes successfully, a **libAuroraPlugin.so** file will be placed in the Debug folder which can be used with the simulator
 ## Run Your Plugin
 
-On macOS and Linux, before running the simulator, a symbolic link will have to be made in `/usr/local/lib` to the libPluginUtilities.so file that is stored in the utilities folder of the AuroraPlugin directory.
-To make this link, type the following into terminal.
+Open up a Command Prompt and change your working directory to the PluginSDK folder. The `music_processor` python script must be run first with a virtual environment, enter:
 
-macOS:
-`ln -s <Path>/Utilities/libPluginUtilties.so /usr/local/lib/libPluginUtilities.so`
-
-Ubuntu:
-`ln -s <Path>/Utilities/libPluginUtilties.so /usr/lib/libPluginUtilities.so`
-
-where _Path_ is the absolute path to the Aurora Plugin directory on your computer. No link is required in Cygwin, since the utilities library is statically linked in windows.
-
-To run the simulator, open up a terminal (Cygwin terminal on windows) and change your working directory to the PluginSDK folder.
-The music_processor python script must be run first, by entering:
+`activate nanoleaf`
 
 `python music_processor.py`
 
-Note that music_processor should be run **outside** of Cygwin on Windows, e.g., in a command window.
-
-Next, to run the simulator, enter:
+Open up a Cygwin terminal to run the sound module simulator, enter:
 
 `./SoundModuleSimulator -p <absolute path to .so file> -i <ip address>`
 
@@ -104,7 +84,7 @@ If you generated a color palette (see Plugin Builder), enter:
 
 The *.so* file is the compiled plugin that you wish to run on the Aurora. 
 
-The IP address that you enter is the ip address of the Aurora on the local network. The ip address can be found by using [Bonjour Browser](http://www.tildesoft.com) on macOS and [SSDP Scanner](https://www.microsoft.com/en-us/store/p/ssdp-scanner/9wzdncrcs2n7 ) on Windows.
+The IP address that you enter is the ip address of the Aurora on the local network. The ip address can be found by using [SSDP Scanner](https://www.microsoft.com/en-us/store/p/ssdp-scanner/9wzdncrcs2n7).
 
 When using the simulator for the first time, the simulator will attempt to acquire an authentication token from the Aurora and ask the user to hold down the power button on the Aurora for 5-7 seconds. This step is not required during subsequent executions of the simulator. Note: the Simulator will only maintain authentication with one Aurora at a time.
 
@@ -113,7 +93,6 @@ A plugin builder tool can be used to simplify the process of:
 
 * _Pairing with an Aurora_
 * _Creating a palette_
-* _Building and running plugins **(Mac and Linux only)**_
 
 In the directory plugin-builder-tool/ simply run the command: `python main.py`. A GUI will appear that prompts you to enter the ip address of the testing Aurora, your desired palette, and the absolute path to your plugin in the directory AuroraPluginTemplate/.
 
