@@ -1,18 +1,6 @@
 # Installation Instructions
 
-Clone or download the appropriate SDK repo for Windows from our [GitHub Page](https://github.com/nanoleaf/aurora-sdk-win)
-
-In the SDK, the `music_processor` python script requires the latest version of the following (non-standard) python packages
-
-* _numpy_
-* _pyaudio_
-* _librosa_
-
-We highly recommend that you use a virtual environment to install these packages and to run the `music_processor` script. The following instructions will use `conda` to create virtual environments.
-
-Cygwin is required to work with the SDK on Windows. For installation instructions, see [here](https://cygwin.com/install.html).
-
-During Cygwin install, make sure to select the following packages:
+Cygwin is required to work with the SDK on Windows. For installation instructions, see [here](https://cygwin.com/install.html). During Cygwin install, make sure to select the following packages to be installed:
 
 `make`
 
@@ -22,78 +10,108 @@ During Cygwin install, make sure to select the following packages:
 
 `python`
 
-Install miniconda for Windows from [here](https://conda.io/miniconda.html). Make sure to select the option to **Add Anaconda to my PATH environment variable**.
+`xinit`
 
-The following should be executed within a Command Prompt.
+`xorg-server`
 
-Create and activate a virtual environment called `nanoleaf` (or any other name):
+In Cygwin, clone or download the appropriate SDK for Windows from our [GitHub Page](https://github.com/nanoleaf/aurora-sdk-win).
 
-`conda create --name nanoleaf`
-
-`activate nanoleaf`
-
-Navigate to the top-level SDK directory `aurora-sdk-win`. It may be located within your Cygwin directory, for example, `C:\cygwin64\home\nanoleaf\aurora-sdk-win`.
+Navigate to the top-level SDK directory `aurora-sdk-win`.
 
 Install numpy:
 
-`conda install numpy`
+`pip install numpy`
 
-Install pyaudio using `pip` (`conda install` will likely fail):
+Install remaining packages:
 
-`pip install pyaudio`
+`pip install -r requirements.txt`
 
-Install librosa:
+## Common Errors
+### `python` and `pip` mismatch
+If you have more than source of python and associated tools in Cygwin, please make sure `python` and `pip` belong to the same source (e.g., Cygwin native python 2, Cygwin native python 3, Anaconda, etc.).
 
-`conda install -c conda-forge librosa`
+To check, use `which -a python` and `which -a pip`, the first line displayed is the current source.
 
-Install future (python 2.x users only):
+### Permissions
+Check if the executables in the SDK have been granted execution privilege.
 
-`conda install future`
+# Plugin Builder
+The Plugin Builder tool is the preferred method for:
 
-To deactivate the virtual environment:
+* Pairing with an Light Panels
+* Using the Light Panels simulator
+* Using plugin options
+* Creating a palette
+* Building and running plugins
 
-`deactivate nanoleaf`
+In the directory plugin-builder-tool/ simply run the command: `python main.py`. A GUI will appear that prompts you to enter the IP address of the testing Light Panels (or use a simulator), your desired palette, and the absolute path to your plugin in the directory AuroraPluginTemplate/.
 
-# Testing Your Plugin
-## Compile Your Plugin
-The _AuroraPlugin_ Framework comes with a makefile and a utilities library.
-Once you have completed the implementation of your plugin, you can build it using the makefile in the Debug folder. If any additional libraries have been used, the makefile must be modified to link those libraries in as well during linking.
+A GUI also exists to create Plugin Options for your plugin. The GUI reads and writes the given Plugin Options to the PluginOptions.h of whichever plugin is selected by the plugin location field.
 
-To compile, use a Cygwin terminal and change your working directory to the PluginSDK/Debug folder. Use the following commands:
+To build and test a plugin, simply browse to the directory of the plugin, such as ``AuroraPluginTemplate``, pressing Build, then Upload & Run.
+
+## Common Errors
+If you encounter the following error message trying to run the Plugin Builder:
+
+`_tkinter.TclError: no display name and no $DISPLAY environment variable`
+
+Then xinit/xorg-server may not be running. In your Cygwin terminal, run the following command:
+
+`export DISPLAY=:0.0`
+
+If the same error still persists, run `XWin Server` from the Windows Start Menu, an application which should be installed with Cygwin.
+
+## Working with Light Panels
+If you have a set of Light Panels, you can view the plugin on the panels themselves from within Plugin Builder. The Light Panels must be connected to a WiFi network.
+
+### IP Address
+The IP address of your Light Panels can be determined by using [SSDP Scanner](https://www.microsoft.com/en-us/store/p/ssdp-scanner/9wzdncrcs2n7).
+
+### Pairing
+An initial pairing process is required to connect the Plugin Builder with Light Panels. This is a one-time process for each set of Light Panels.
+
+Pairing Steps:
+1. Enter the IP of the Light Panels and press Pair.
+2. Hold down the power button on the Light Panels controller for 5-7 seconds
+3. Press Enter in the Cygwin console
+
+# Advanced Build and Test
+If you do not wish to use the Plugin Builder GUI or run into errors while using it, you try to following advanced steps to build and test your plugin.
+
+## Build
+In Cygwin, navigate to the ``Debug`` folder inside a plugin directory such as ``AuroraPluginTemplate`` or ``Example\Converge``. Build using the following
 
 `make clean`
 
 `make`
 
-Once the compilation completes successfully, a **libAuroraPlugin.so** file will be placed in the Debug folder which can be used with the simulator
-## Run Your Plugin
+If compilation completes successfully, a **libAuroraPlugin.so** file will be placed in the ``Debug`` folder.
 
-Open up a Command Prompt and change your working directory to the PluginSDK folder. The `music_processor` python script must be run first with a virtual environment, enter:
+## Test
+The following requires up to 3 Cygwin consoles. All commands should be entered from the top-level SDK directory.
 
-`activate nanoleaf`
+In console 1, enter
 
 `python music_processor.py`
 
-Open up a Cygwin terminal to run the sound module simulator, enter:
+If you want to use the Light Panels simulator and your Python version is 2.7, in console 2, enter
 
-`./SoundModuleSimulator -p <absolute path to .so file> -i <ip address>`
+`python LightPanelsSimulator/py27/light-panels-simulator.py`
 
-If you generated a color palette (see Plugin Builder), enter:
+If your Python version is 3.6, enter
 
-`./SoundModuleSimulator -p <absolute path to .so file> -i <ip address> -cp <absolute path to palette file>`
+`python LightPanelsSimulator/py3/light-panels-simulator.py`
 
-The *.so* file is the compiled plugin that you wish to run on the Aurora. 
+No other python version is currently supported.
 
-The IP address that you enter is the ip address of the Aurora on the local network. The ip address can be found by using [SSDP Scanner](https://www.microsoft.com/en-us/store/p/ssdp-scanner/9wzdncrcs2n7).
+In console 3, enter
 
-When using the simulator for the first time, the simulator will attempt to acquire an authentication token from the Aurora and ask the user to hold down the power button on the Aurora for 5-7 seconds. This step is not required during subsequent executions of the simulator. Note: the Simulator will only maintain authentication with one Aurora at a time.
+`./AnimationProcessor -p <absolute path to .so file> -i [<ip address>] [-s] [-cp <absolute path to palette file>] [-plugin_opts <absolute path to PluginOptions.h file]`
 
-## Plugin Builder
-A plugin builder tool can be used to simplify the process of:
+The *.so* file is the compiled plugin that you wish to run.
 
-* _Pairing with an Aurora_
-* _Creating a palette_
+Enter the IP address of the Light Panels if you have them, otherwise, use ``-s`` to use Light Panels Simulator.
 
-In the directory plugin-builder-tool/ simply run the command: `python main.py`. A GUI will appear that prompts you to enter the ip address of the testing Aurora, your desired palette, and the absolute path to your plugin in the directory AuroraPluginTemplate/.
+Use ``-cp`` to add the path to the palette file, if necessary.
 
-Note that the Plugin Builder tool will output information to the terminal. Please check the terminal output for instructions, e.g., during pairing with Aurora or debug printouts from your plugin.
+Use ``-plugin_opt`` to add the path to the ``PluginOptions.h``, if necessary.
